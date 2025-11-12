@@ -5,11 +5,9 @@ using UnityEditor;
 using UnityEngine;
 using TcgEngine;
 using Sirenix.Utilities.Editor;
-using Sirenix.OdinInspector.Demos.RPGEditor;
 using Sirenix.OdinInspector;
 using System.Reflection;
 using Sirenix.Utilities;
-using Unity.VisualScripting;
 using System.Linq;
 
 
@@ -577,7 +575,6 @@ public class EditorUtils
 
     public static T Clone<T>(Type selectedType, object selected, bool copyValues = true) where T : ScriptableObject
     {
-        T clone = null;
         string folder = "";
         if (selected == null)
         {
@@ -587,28 +584,39 @@ public class EditorUtils
         {
             string[] parts = AssetDatabase.GetAssetPath(selected as UnityEngine.Object).Split("/");
             Array.Resize(ref parts, parts.Length - 1);
-
             folder = string.Join("/", parts);
         }
 
-        MethodInfo showDialogMethod = typeof(ScriptableObjectCreator).GetMethod("ShowDialog");
-        MethodInfo genericShowDialogMethod = showDialogMethod.MakeGenericMethod(selectedType);
-        object[] parameters = { $"{folder}", new Action<T>(obj =>
+        // Create new ScriptableObject instance
+        T clone = ScriptableObject.CreateInstance(selectedType) as T;
+
+        if (clone == null)
+            return null;
+
+        // Copy values if requested
+        if (copyValues && selected != null)
+            UpdateForType(selectedType, selected as T, clone);
+
+        // Generate unique name
+        string baseName = selected != null ? (selected as UnityEngine.Object).name : "New" + selectedType.Name;
+        string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{baseName}.asset");
+        string fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+
+        // Set id field to match filename
+        var propertyInfo = clone.GetType().GetField("id");
+        if (propertyInfo != null)
         {
-            if (copyValues)
-                UpdateForType(selectedType, selected as T, obj);
+            propertyInfo.SetValue(clone, fileName.ToLower().Replace(" ", "_"));
+        }
 
-            var propertyInfo = obj.GetType().GetField("id");
+        // Create and save asset
+        AssetDatabase.CreateAsset(clone, assetPath);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
 
-            if (propertyInfo != null)
-            {
-                propertyInfo.SetValue(obj, obj.name.ToLower().Replace(" ", "_"));
-            }
-
-            clone = obj;
-        })};
-
-        genericShowDialogMethod.Invoke(null, parameters);
+        // Select the new asset
+        EditorUtility.FocusProjectWindow();
+        Selection.activeObject = clone;
 
         return clone;
     }
