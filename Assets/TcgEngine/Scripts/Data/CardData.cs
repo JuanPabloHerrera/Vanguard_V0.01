@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 namespace TcgEngine
 {
@@ -28,50 +29,90 @@ namespace TcgEngine
     [CreateAssetMenu(fileName = "card", menuName = "TcgEngine/CardData", order = 5)]
     public class CardData : ScriptableObject
     {
+        [HorizontalGroup("Info", Width = 325)]
+        [VerticalGroup("Info/Side1", Order = 2), LabelWidth(50)]
         public string id;
 
-        [Header("Display")]
+        [VerticalGroup("Info/Side1"), LabelWidth(50)]
         public string title;
+
+        [VerticalGroup("Info/Side2"), PreviewField(100), HideLabel]
         public Sprite art_full;
+
+        [VerticalGroup("Info/Side2"), PreviewField(100), HideLabel]
         public Sprite art_board;
 
-        [Header("Stats")]
+        [VerticalGroup("Info/Side1"), LabelWidth(50)]
         public CardType type;
+
+        [VerticalGroup("Info/Side1"), LabelWidth(50)]
+        [InlineButton("@CardEditor.CreateNewAction($root, $property)", SdfIconType.PlusCircleDotted, "")]
         public TeamData team;
+
+        [VerticalGroup("Info/Side1"), LabelWidth(50)]
+        [InlineButton("@CardEditor.CreateNewAction($root, $property)", SdfIconType.PlusCircleDotted, "")]
         public RarityData rarity;
+
+        [HorizontalGroup("Info/Side1/Stats"), LabelWidth(30), LabelText(SdfIconType.DiamondFill, Text = "")]
         public int mana;
+
+        [HorizontalGroup("Info/Side1/Stats"), LabelWidth(30), LabelText(SdfIconType.Hammer, Text = "")]
         public int attack;
+
+        [HorizontalGroup("Info/Side1/Stats"), LabelWidth(30), LabelText(SdfIconType.DropletFill, Text = "")]
         public int hp;
 
-        [Header("Traits")]
+        [TabGroup("Traits", Icon = SdfIconType.Speedometer), ListDrawerSettings]
         public TraitData[] traits;
+
+        [TabGroup("Traits", Icon = SdfIconType.Speedometer)]
         public TraitStat[] stats;
 
-        [Header("Abilities")]
+        [TabGroup("Abilities", Icon = SdfIconType.Magic), ListDrawerSettings]
         public AbilityData[] abilities;
 
-        [Header("Card Text")]
+        [VerticalGroup("Info/Side1"), LabelWidth(50)]
         [TextArea(3, 5)]
         public string text;
 
-        [Header("Description")]
+        [VerticalGroup("Info/Side1"), LabelWidth(50)]
         [TextArea(5, 10)]
         public string desc;
 
-        [Header("FX")]
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject spawn_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject death_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject attack_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject damage_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject idle_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public AudioClip spawn_audio;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public AudioClip death_audio;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public AudioClip attack_audio;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public AudioClip damage_audio;
 
-        [Header("Availability")]
+        [TabGroup("Availability", Icon = SdfIconType.Basket3Fill)]
         public CardAvailability availability;
+
+        [TabGroup("Availability", Icon = SdfIconType.Basket3Fill)]
         public int cost = 100;
+
+        [TabGroup("Availability", Icon = SdfIconType.Basket3Fill)]
         public PackData[] packs;
 
         public static List<CardData> card_list = new List<CardData>();                              //Faster access in loops

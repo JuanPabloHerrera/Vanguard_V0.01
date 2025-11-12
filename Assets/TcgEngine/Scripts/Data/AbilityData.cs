@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TcgEngine.Gameplay;
+using Sirenix.OdinInspector;
 
 namespace TcgEngine
 {
@@ -10,43 +11,71 @@ namespace TcgEngine
     /// </summary>
 
     [CreateAssetMenu(fileName = "ability", menuName = "TcgEngine/AbilityData", order = 5)]
+    [InlineButton("@CardEditor.CloneAction($root, $property, $value)",
+        SdfIconType.FileEarmarkPlusFill, "",
+        ShowIf = "@CardEditor.ShowNotNull($value)")]
     public class AbilityData : ScriptableObject
     {
         public string id;
 
-        [Header("Trigger")]
-        public AbilityTrigger trigger;             //WHEN does the ability trigger?
-        public ConditionData[] conditions_trigger; //Condition checked on the card triggering the ability (usually the caster)
+        [TabGroup("Trigger", Icon = SdfIconType.Alarm), EnumToggleButtons, HideLabel]
+        public AbilityTrigger trigger;
 
-        [Header("Target")]
-        public AbilityTarget target;               //WHO is targeted?
-        public ConditionData[] conditions_target;  //Condition checked on the target to know if its a valid taget
-        public FilterData[] filters_target;  //Condition checked on the target to know if its a valid taget
+        [TabGroup("Trigger", Icon = SdfIconType.Alarm), ListDrawerSettings]
+        public ConditionData[] conditions_trigger;
 
-        [Header("Effect")]
-        public EffectData[] effects;              //WHAT this does?
-        public StatusData[] status;               //Status added by this ability  
-        public int value;                         //Value passed to the effect (deal X damage)
-        public int duration;                      //Duration passed to the effect (usually for status, 0=permanent)
+        [TabGroup("Target", Icon = SdfIconType.Capslock), EnumToggleButtons, HideLabel]
+        public AbilityTarget target;
 
-        [Header("Chain/Choices")]
-        public AbilityData[] chain_abilities;    //Abilities that will be triggered after this one
+        [TabGroup("Target", Icon = SdfIconType.Capslock), ListDrawerSettings]
+        public ConditionData[] conditions_target;
+
+        [TabGroup("Target", Icon = SdfIconType.Capslock), ListDrawerSettings]
+        public FilterData[] filters_target;
+
+        [TabGroup("Effect", Icon = SdfIconType.Lightning), ListDrawerSettings]
+        public EffectData[] effects;
+
+        [TabGroup("Effect", Icon = SdfIconType.Lightning), ListDrawerSettings]
+        public StatusData[] status;
+
+        [TabGroup("Effect", Icon = SdfIconType.Lightning)]
+        public int value;
+
+        [TabGroup("Effect", Icon = SdfIconType.Lightning)]
+        public int duration;
+
+        [TabGroup("Chain or Choices", Icon = SdfIconType.SignpostSplit), ListDrawerSettings]
+        public AbilityData[] chain_abilities;
 
         [Header("Activated Ability")]
-        public int mana_cost;                   //Mana cost for  activated abilities
-        public bool exhaust;                    //Action cost for activated abilities
+        public int mana_cost;
+        public bool exhaust;
 
-        [Header("FX")]
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject board_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject caster_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject target_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public GameObject projectile_fx;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public AudioClip cast_audio;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public AudioClip target_audio;
+
+        [TabGroup("FX", Icon = SdfIconType.Stars)]
         public bool charge_target;
 
         [Header("Text")]
         public string title;
+
         [TextArea(5, 7)]
         public string desc;
 
