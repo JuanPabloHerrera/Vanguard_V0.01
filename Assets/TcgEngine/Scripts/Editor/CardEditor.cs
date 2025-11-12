@@ -524,9 +524,14 @@ public class EditorUtils
                     var clonedArray = Array.CreateInstance(fi.FieldType.GetElementType(), sourceArray.Length);
                     for (var i = 0; i < sourceArray.Length; i++)
                     {
-                        if (typeof(ICloneable).IsAssignableFrom(sourceArray.GetValue(i)))
+                        var value = sourceArray.GetValue(i);
+                        if (value != null && typeof(ICloneable).IsAssignableFrom(value.GetType()))
                         {
-                            clonedArray.SetValue(((ICloneable)sourceArray.GetValue(i)).Clone(), i);
+                            clonedArray.SetValue(((ICloneable)value).Clone(), i);
+                        }
+                        else
+                        {
+                            clonedArray.SetValue(value, i);
                         }
                     }
 
