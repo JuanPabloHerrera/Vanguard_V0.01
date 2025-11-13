@@ -434,19 +434,20 @@ namespace TcgEngine.Client
             // Check if card can attack
             if (card.CanAttack() && card.CardData.IsCharacter())
             {
-                // Check if there's any valid attack target
-                if (data.CanAttackTarget(card, data.GetPlayer(data.GetOpponentPlayerID(player.player_id))))
+                // Get opponent player
+                Player oplayer = data.GetOpponentPlayer(player.player_id);
+                if (oplayer == null)
+                    return false;
+
+                // Check if there's any valid attack target (player)
+                if (data.CanAttackTarget(card, oplayer))
                     return true;
 
                 // Check if can attack any enemy cards
-                Player oplayer = data.GetPlayer(data.GetOpponentPlayerID(player.player_id));
-                if (oplayer != null)
+                foreach (Card target in oplayer.cards_board)
                 {
-                    foreach (Card target in oplayer.cards_board)
-                    {
-                        if (data.CanAttackTarget(card, target))
-                            return true;
-                    }
+                    if (data.CanAttackTarget(card, target))
+                        return true;
                 }
             }
 
