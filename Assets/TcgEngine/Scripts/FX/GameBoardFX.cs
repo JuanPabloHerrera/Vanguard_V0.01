@@ -62,6 +62,27 @@ namespace TcgEngine.FX
             if (iability != null)
             {
                 FXTool.DoFX(iability.board_fx, Vector3.zero);
+
+                // Show card reveal animation for hero powers (Activate trigger on heroes)
+                if (caster != null && iability.trigger == AbilityTrigger.Activate)
+                {
+                    CardData icard = CardData.Get(caster.card_id);
+                    if (icard != null && icard.type == CardType.Hero)
+                    {
+                        int player_id = GameClient.Get().GetPlayerID();
+                        GameObject prefab = player_id == caster.player_id ? AssetData.Get().play_card_fx : AssetData.Get().play_card_other_fx;
+                        GameObject obj = FXTool.DoFX(prefab, Vector3.zero);
+                        CardUI ui = obj?.GetComponentInChildren<CardUI>();
+                        if (ui != null)
+                        {
+                            ui.SetCard(icard, caster.VariantData);
+                        }
+
+                        // Play hero power audio
+                        AudioClip ability_audio = icard.attack_audio != null ? icard.attack_audio : AssetData.Get().card_spawn_audio;
+                        AudioTool.Get().PlaySFX("hero_power", ability_audio);
+                    }
+                }
             }
         }
 
