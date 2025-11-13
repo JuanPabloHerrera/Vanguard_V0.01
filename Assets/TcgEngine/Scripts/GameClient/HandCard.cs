@@ -130,7 +130,7 @@ namespace TcgEngine.Client
             card_transform.localScale = Vector3.Lerp(card_transform.localScale, target_size, 5f * Time.deltaTime);
 
             card_ui.SetCard(card);
-            card_glow.enabled = IsFocus() || IsDrag();
+            card_glow.enabled = IsFocus() || IsDrag() || IsPlayable();
             prev_pos = Vector3.Lerp(prev_pos, card_transform.position, 1f * Time.deltaTime);
         }
 
@@ -170,6 +170,21 @@ namespace TcgEngine.Client
         public bool IsDrag()
         {
             return drag;
+        }
+
+        public bool IsPlayable()
+        {
+            Game gdata = GameClient.Get().GetGameData();
+            Card card = GetCard();
+            if (card == null)
+                return false;
+
+            int player_id = GameClient.Get().GetPlayerID();
+            Player player = gdata.GetPlayer(player_id);
+            if (player == null)
+                return false;
+
+            return player.CanPayMana(card);
         }
 
         public Card GetCard()
