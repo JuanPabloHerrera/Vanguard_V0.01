@@ -29,6 +29,7 @@ namespace TcgEngine.UI
         private int target_xp = 0;
         private float coins = 0;
         private float xp = 0;
+        private int last_winner = -1;
 
         private static EndGamePanel _instance;
 
@@ -141,10 +142,34 @@ namespace TcgEngine.UI
                     reward_loaded = true;
                 }
             }
+
+            //Solo Mode Rewards
+            if (GameClient.game_settings.game_type == GameType.Solo && RewardManager.Get().IsRewardGained())
+            {
+                Player player = GameClient.Get().GetPlayer();
+                int winner = last_winner;
+                
+                if (winner == player.player_id)
+                {
+                    target_coins = 100; // Win
+                }
+                else if (winner == -1)
+                {
+                    target_coins = 50; // Tie
+                }
+                else
+                {
+                    target_coins = 25; // Loss
+                }
+                
+                target_xp = 0; // No XP for solo mode
+                reward_loaded = true;
+            }
         }
 
         public void ShowEnd(int winner)
         {
+            last_winner = winner;
             reward_loaded = false;
             RefreshPanel(winner);
             RefreshRewards();

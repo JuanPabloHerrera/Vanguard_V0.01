@@ -148,6 +148,12 @@ namespace TcgEngine.Client
             PlayerControls controls = PlayerControls.Get();
             bool selected = controls.GetSelected() == this;
             float target_alpha = IsFocus() || selected ? 1f : 0f;
+            
+            // Show glow when card is unexhausted and ready to attack (player's turn and card belongs to player)
+            bool is_ready_to_attack = !card.exhausted && data.IsPlayerTurn(player) && card.player_id == player.player_id;
+            if (is_ready_to_attack)
+                target_alpha = 1f;
+            
             if (destroyed || timer < 1f)
                 target_alpha = 0f;
             if (equipment != null && equipment.IsFocus())

@@ -16,6 +16,5 @@ MonoBehaviour:
   title: Protected
   icon: {fileID: 0}
   desc: Cannot be attacked. Protected by Taunt.
-  status_fx: {fileID: 8041625327064058042, guid: 3d12108228a83c44f864468b6ae774fd,
-    type: 3}
+  status_fx: {fileID: 0}
   hvalue: 0
