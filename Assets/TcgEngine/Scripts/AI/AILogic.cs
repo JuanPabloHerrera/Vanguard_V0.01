@@ -446,6 +446,14 @@ namespace TcgEngine.AI
                     AbilityData ability = abilities[a];
                     if (ability.trigger == AbilityTrigger.Activate && data.CanCastAbility(card, ability) && ability.HasValidSelectTarget(data, card))
                     {
+                        // Special logic for hero_energy hero power
+                        if (card.CardData.type == CardType.Hero && card.card_id == "hero_energy")
+                        {
+                            // Only use hero_energy if gaining 1 mana would allow playing a card from hand
+                            if (!WouldManaEnableCardPlay(data, player, 1))
+                                continue; // Skip this ability
+                        }
+
                         AIAction action = CreateAction(type, card);
                         action.ability_id = ability.id;
                         actions.Add(action);
@@ -653,6 +661,65 @@ namespace TcgEngine.AI
                 if (list[i].type == type)
                     return true;
             }
+            return false;
+        }
+
+        // Check if gaining extra mana would enable playing any card from hand
+        private bool WouldManaEnableCardPlay(Game data, Player player, int extra_mana)
+        {
+            int current_mana = player.mana;
+            int new_mana = current_mana + extra_mana;
+
+            // Check each card in hand
+            foreach (Card card in player.cards_hand)
+            {
+                int card_cost = card.GetMana();
+
+                // If card is currently unplayable but would be playable with extra mana
+                if (card_cost > current_mana && card_cost <= new_mana)
+                {
+                    // Check if the card can actually be played (has valid slot, etc.)
+                    if (card.CardData.IsBoardCard())
+                    {
+                        Slot slot = player.GetRandomEmptySlot(random_gen, slot_array.Get());
+                        if (data.CanPlayCard(card, slot, true)) // skip_cost = true since we're checking hypothetically
+                            return true;
+                    }
+                    else if (card.CardData.IsRequireTargetSpell())
+                    {
+                        // For target spells, just check if there are any valid targets
+                        if (HasValidSpellTarget(data, card))
+                            return true;
+                    }
+                    else if (data.CanPlayCard(card, Slot.None, true))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // Helper to check if a spell has any valid targets
+        private bool HasValidSpellTarget(Game data, Card card)
+        {
+            // Check player targets
+            for (int p = 0; p < data.players.Length; p++)
+            {
+                Player tplayer = data.players[p];
+                Slot tslot = new Slot(tplayer.player_id);
+                if (data.CanPlayCard(card, tslot, true))
+                    return true;
+            }
+
+            // Check card targets
+            foreach (Slot slot in Slot.GetAll())
+            {
+                if (data.CanPlayCard(card, slot, true))
+                    return true;
+            }
+
             return false;
         }
 
