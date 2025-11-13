@@ -148,12 +148,11 @@ namespace TcgEngine.Client
             PlayerControls controls = PlayerControls.Get();
             bool selected = controls.GetSelected() == this;
             float target_alpha = IsFocus() || selected ? 1f : 0f;
-            
-            // Show glow when card is unexhausted and ready to attack (player's turn and card belongs to player)
-            bool is_ready_to_attack = !card.exhausted && data.IsPlayerTurn(player) && card.player_id == player.player_id;
-            if (is_ready_to_attack)
+
+            // Show glow when card can perform any action (attack or activate ability)
+            if (CanDoAction())
                 target_alpha = 1f;
-            
+
             if (destroyed || timer < 1f)
                 target_alpha = 0f;
             if (equipment != null && equipment.IsFocus())
@@ -412,6 +411,72 @@ namespace TcgEngine.Client
         public bool IsEquipFocus()
         {
             return equipment != null && equipment.IsFocus();
+        }
+
+        // Check if card can perform any action (attack or activate ability)
+        public bool CanDoAction()
+        {
+            Game data = GameClient.Get().GetGameData();
+            Player player = GameClient.Get().GetPlayer();
+            Card card = GetCard();
+
+            if (card == null || player == null)
+                return false;
+
+            // Only check for player's own cards
+            if (card.player_id != player.player_id)
+                return false;
+
+            // Not player's turn
+            if (!data.IsPlayerActionTurn(player))
+                return false;
+
+            // Check if card can attack
+            if (card.CanAttack() && card.CardData.IsCharacter())
+            {
+                // Check if there's any valid attack target
+                if (data.CanAttackTarget(card, data.GetPlayer(data.GetOpponentPlayerID(player.player_id))))
+                    return true;
+
+                // Check if can attack any enemy cards
+                Player oplayer = data.GetPlayer(data.GetOpponentPlayerID(player.player_id));
+                if (oplayer != null)
+                {
+                    foreach (Card target in oplayer.cards_board)
+                    {
+                        if (data.CanAttackTarget(card, target))
+                            return true;
+                    }
+                }
+            }
+
+            // Check if card has any activatable abilities
+            List<AbilityData> abilities = card.GetAbilities();
+            foreach (AbilityData ability in abilities)
+            {
+                if (ability != null && ability.trigger == AbilityTrigger.Activate)
+                {
+                    if (data.CanCastAbility(card, ability))
+                        return true;
+                }
+            }
+
+            // Check equipped card abilities
+            Card equip = data.GetEquipCard(card.equipped_uid);
+            if (equip != null)
+            {
+                List<AbilityData> equip_abilities = equip.GetAbilities();
+                foreach (AbilityData ability in equip_abilities)
+                {
+                    if (ability != null && ability.trigger == AbilityTrigger.Activate)
+                    {
+                        if (data.CanCastAbility(equip, ability))
+                            return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void OnPointerEnter(PointerEventData edata)
